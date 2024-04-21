@@ -18,7 +18,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <regex>
-
+#include "renderFlag.hpp"
 #include "AtariVox.hxx"
 #include "Booster.hxx"
 #include "Cart.hxx"
@@ -132,9 +132,7 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   mySwitches = make_unique<Switches>(myEvent, myProperties, myOSystem.settings());
 
   myTIA->setFrameManager(myFrameManager.get());
-#ifdef _JAFFAR_PLAY
   myOSystem.sound().stopWav();
-#endif
   // Reinitialize the RNG
   myOSystem.random().initSeed(static_cast<uInt32>(TimerManager::getTicks()));
 
@@ -173,12 +171,10 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   setControllers(myProperties.get(PropType::Cart_MD5));
 
   // Pause audio and clear framebuffer while autodetection runs
-#ifdef _JAFFAR_PLAY
   myOSystem.sound().pause(true);
-#endif
 
 #ifdef _JAFFAR_PLAY
-  myOSystem.frameBuffer().clear();
+  if (stella::_renderingEnabled) myOSystem.frameBuffer().clear();
 #endif
 
   if(myDisplayFormat == "AUTO" || myOSystem.settings().getBool("rominfo"))
@@ -308,12 +304,13 @@ void Console::autodetectFrameLayout(bool reset)
     myTIA->update();
 
 #ifdef _JAFFAR_PLAY
-  FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), true);
+  if (stella::_renderingEnabled) FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), true);
 #endif
+
   myTIA->update();
 
 #ifdef _JAFFAR_PLAY
-  FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), false);
+  if (stella::_renderingEnabled) FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), false);
 #endif
 
   for(int i = 0; i < 40; ++i)
@@ -685,9 +682,12 @@ FBInitStatus Console::initializeVideo(bool full)
                    ": \"" + myProperties.get(PropType::Cart_Name) + "\"";
 
 #ifdef _JAFFAR_PLAY
+if (stella::_renderingEnabled) 
+{
     fbstatus = myOSystem.frameBuffer().createDisplay(title,  BufferType::Emulator, size, false);
     if(fbstatus != FBInitStatus::Success)    return fbstatus;
     myOSystem.frameBuffer().showFrameStats( myOSystem.settings().getBool(devSettings ? "dev.stats" : "plr.stats"));
+}
 #endif();
   }
   return fbstatus;
@@ -832,7 +832,6 @@ void Console::setTIAProperties()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::createAudioQueue()
 {
-#ifdef _JAFFAR_PLAY
   const bool useStereo = myOSystem.settings().getBool(AudioSettings::SETTING_STEREO)
     || myProperties.get(PropType::Cart_Sound) == "STEREO";
 
@@ -841,7 +840,6 @@ void Console::createAudioQueue()
     myEmulationTiming.audioQueueCapacity(),
     useStereo
   );
-#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -949,10 +947,8 @@ unique_ptr<Controller> Console::getControllerPort(const Controller::Type type, c
 {
   unique_ptr<Controller> controller;
 
-#ifdef _JAFFAR_PLAY
   myOSystem.eventHandler().defineKeyControllerMappings(type, port, myProperties);
   myOSystem.eventHandler().defineJoyControllerMappings(type, port);
-#endif
 
   switch(type)
   {

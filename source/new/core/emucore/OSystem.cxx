@@ -20,7 +20,7 @@
 
 #include "bspf.hxx"
 #include "Logger.hxx"
-
+#include "renderFlag.hpp"
 #include "MediaFactory.hxx"
 #include "Sound.hxx"
 
@@ -120,11 +120,8 @@ OSystem::~OSystem()
 #endif
 }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool OSystem::initialize(const Settings::Options& options)
+void OSystem::initializeVideo()
 {
-  loadConfig(options);
-
   // NOTE: The framebuffer MUST be created before any other object!!!
   // Get relevant information about the video hardware
   // This must be done before any graphics context is created, since
@@ -133,12 +130,16 @@ bool OSystem::initialize(const Settings::Options& options)
   myFrameBuffer = make_unique<FrameBuffer>(*this);
   myFrameBuffer->initialize();
   #endif
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool OSystem::initialize(const Settings::Options& options)
+{
+  loadConfig(options);
 
   // Create the event handler for the system
-#ifdef _JAFFAR_PLAY
   myEventHandler = MediaFactory::createEventHandler(*this);
   myEventHandler->initialize();
-#endif
 
   myStateManager = make_unique<StateManager>(*this);
   myTimerManager = make_unique<TimerManager>();
@@ -340,9 +341,7 @@ string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom
   ostringstream buf;
 
   myConsole = openConsole(myRomFile, myRomMD5);
-#ifdef _JAFFAR_PLAY
   myEventHandler->reset(EventHandlerState::EMULATION);
-#endif
   createFrameBuffer();
 
   return "";
@@ -640,22 +639,29 @@ double OSystem::dispatchEmulation()
   DispatchResult dispatchResult;
 
 #ifdef _JAFFAR_PLAY
-  // Check whether we have a frame pending for rendering...
-  const bool framePending = tia.newFramePending();
-  // ... and copy it to the frame buffer. It is important to do this before
-  // the worker is started to avoid racing.
-  if (framePending) {
-    myFpsMeter.render(tia.framesSinceLastRender());
-    tia.renderToFrameBuffer();
+  bool framePending = false;
+  if (stella::_renderingEnabled)
+  {
+    // Check whether we have a frame pending for rendering...
+    framePending = tia.newFramePending();
+    // ... and copy it to the frame buffer. It is important to do this before
+    // the worker is started to avoid racing.
+    if (framePending) {
+      myFpsMeter.render(tia.framesSinceLastRender());
+      tia.renderToFrameBuffer();
+    }
   }
 #endif
 
   tia.update(timing.maxCyclesPerTimeslice());
 
 #ifdef _JAFFAR_PLAY
-  // Render the frame. This may block, but emulation will continue to run on
-  // the worker, so the audio pipeline is kept fed :)
-  if (framePending) myFrameBuffer->updateInEmulationMode(myFpsMeter.fps());
+  if (stella::_renderingEnabled)
+  {
+    // Render the frame. This may block, but emulation will continue to run on
+    // the worker, so the audio pipeline is kept fed :)
+    if (framePending) myFrameBuffer->updateInEmulationMode(myFpsMeter.fps());
+  }
 #endif
 
   // Return the 6507 time used in seconds

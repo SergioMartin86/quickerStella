@@ -19,7 +19,7 @@
 #include <map>
 
 #include "Logger.hxx"
-
+#include "renderFlag.hpp"
 #include "Base.hxx"
 #include "Console.hxx"
 #include "PaletteHandler.hxx"
@@ -2465,6 +2465,8 @@ void EventHandler::setState(EventHandlerState state)
   }
 
 #ifdef _JAFFAR_PLAY
+if (stella::_renderingEnabled)
+ {
   // Inform various subsystems about the new state
   myOSystem.stateChanged(myState); // does nothing
 
@@ -2472,7 +2474,7 @@ void EventHandler::setState(EventHandlerState state)
   myOSystem.frameBuffer().setCursorState(); // en/disables cursor for UI and emulation states
 
   if(myOSystem.hasConsole()) myOSystem.console().stateChanged(myState); // does nothingq
-
+ }
 #endif
 
   // Sometimes an extraneous mouse motion event is generated

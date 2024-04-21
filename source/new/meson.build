@@ -1,6 +1,7 @@
 # newStella Core sources
 
 newStellaSrc =  [
+  'renderFlag.cpp',
   'core/os/unix/FSNodePOSIX.cxx',
   'core/os/unix/OSystemUNIX.cxx',
   'core/os/unix/SerialPortUNIX.cxx',

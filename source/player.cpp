@@ -122,6 +122,9 @@ int main(int argc, char *argv[])
   if (jaffarCommon::file::loadStringFromFile(romFileData, romFilePath) == false) JAFFAR_THROW_LOGIC("Could not rom file: %s\n", romFilePath.c_str());
   e.loadROM(romFilePath);
 
+  // Disabling requested blocks from state serialization
+  for (const auto& block : stateDisabledBlocks) e.disableStateBlock(block);
+
   // Calculating ROM SHA1
   auto romSHA1 = jaffarCommon::hash::getSHA1String(romFileData);
 
@@ -180,6 +183,16 @@ int main(int argc, char *argv[])
       jaffarCommon::logger::log("[] Current Step #: %lu / %lu\n", currentStep + 1, sequenceLength);
       jaffarCommon::logger::log("[] Input:          %s\n", input.c_str());
       jaffarCommon::logger::log("[] State Hash:     0x%lX%lX\n", hash.first, hash.second);
+      jaffarCommon::logger::log("[] Memory Contents:\n");
+      for (int i = 0; i < 8; i++)
+      {
+       for (int j = 0; j < 16; j++)
+       {
+        jaffarCommon::logger::log("%02X ", e.getWorkRamPointer()[i*16 + j]);
+       }
+       jaffarCommon::logger::log("\n");
+      }
+      
 
       // Only print commands if not in reproduce mode
       if (isReproduce == false) jaffarCommon::logger::log("[] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | q: quit\n");

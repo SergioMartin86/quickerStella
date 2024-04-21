@@ -26,6 +26,7 @@
 #include "AudioQueue.hxx"
 #include "DispatchResult.hxx"
 #include "Base.hxx"
+#include "renderFlag.hpp"
 
 enum CollisionMask: uInt32 {
   player0   = 0b0111110000000000,
@@ -1510,10 +1511,8 @@ void TIA::tickHblank()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline void TIA::tickHframe()
 {
-#ifdef _JAFFAR_PLAY
-  const uInt32 y = myFrameManager->getY();
-#endif
-
+  uInt32 y = 0;
+  if (stella::_renderingEnabled) y = myFrameManager->getY();
   const uInt32 x = myHctr - TIAConstants::H_BLANK_CLOCKS - myHctrDelta;
 
   myCollisionUpdateRequired = true;
@@ -1525,9 +1524,7 @@ inline void TIA::tickHframe()
   myPlayer1.tick();
   myBall.tick();
 
-#ifdef _JAFFAR_PLAY
-  if (myFrameManager->isRendering())  renderPixel(x, y);
-#endif
+  if (stella::_renderingEnabled) if (myFrameManager->isRendering())  renderPixel(x, y);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

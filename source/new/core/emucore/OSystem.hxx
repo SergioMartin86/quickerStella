@@ -94,6 +94,8 @@ class OSystem
     FBInitStatus createFrameBuffer();
 
   public:
+    void initializeVideo();
+
     /**
       Get the event handler of the system.
 

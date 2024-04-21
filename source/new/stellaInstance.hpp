@@ -7,6 +7,7 @@
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 
+#include "renderFlag.hpp"
 #include "OSystem.hxx"
 #include "Settings.hxx"
 #include "MediaFactory.hxx"
@@ -55,6 +56,7 @@ class EmuInstance : public EmuInstanceBase
 
   void initializeVideoOutput() override
   {
+    _a2600->initializeVideo();
   }
 
   void finalizeVideoOutput() override
@@ -63,10 +65,12 @@ class EmuInstance : public EmuInstanceBase
 
   void enableRendering() override
   {
+    stella::_renderingEnabled = true;
   }
 
   void disableRendering() override
   {
+    stella::_renderingEnabled = false;
   }
 
   void serializeState(jaffarCommon::serializer::Base& s) const override

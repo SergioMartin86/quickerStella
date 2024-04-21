@@ -119,6 +119,9 @@ int main(int argc, char *argv[])
   e.setController1Type(controller1Type);
   e.setController2Type(controller2Type);
 
+  // Disable rendering
+  e.disableRendering();
+  
   // Loading ROM File
   std::string romFileData;
   if (jaffarCommon::file::loadStringFromFile(romFileData, romFilePath) == false) JAFFAR_THROW_LOGIC("Could not rom file: %s\n", romFilePath.c_str());
@@ -138,9 +141,6 @@ int main(int argc, char *argv[])
   
   // Disabling requested blocks from state serialization
   for (const auto& block : stateDisabledBlocks) e.disableStateBlock(block);
-
-  // Disable rendering
-  e.disableRendering();
 
   // Getting full state size
   const auto stateSize = e.getStateSize();

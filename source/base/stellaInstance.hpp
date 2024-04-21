@@ -140,6 +140,7 @@ class EmuInstance : public EmuInstanceBase
     if (controller1 & 0b00100000) _a2600->console().leftController().write(::Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Six,   true);
     if (controller.getRightDifficultyState()) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
     if (controller.getLeftDifficultyState())  _a2600->console().switches().values() &= ~0x40; else _a2600->console().switches().values() |= 0x40;
+    
     _a2600->advanceFrame();
   }
 

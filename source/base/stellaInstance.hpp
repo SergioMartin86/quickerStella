@@ -1,29 +1,23 @@
 #pragma once
 
-typedef  uint8_t uint8;
-typedef  uint16_t uint16;
-typedef  int8_t int16;
-
 #include "../stellaInstanceBase.hpp"
 #include <string>
 #include <vector>
+#include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 
-#define DUMMY_SIZE 1048576
-
-extern "C"
-{ 
- int state_load(unsigned char *state);
- int state_save(unsigned char *state);
- void initialize();
- void initializeVideoOutput();
- void finalizeVideoOutput();
- void loadROM(const char* filePath);
- void renderFrame();
- void advanceFrame(const uint16_t controller1, const uint16_t controller2);
- uint8_t* getWorkRamPtr();
-}
+#include "OSystem.hxx"
+#include "Settings.hxx"
+#include "MediaFactory.hxx"
+#include "Serializer.hxx"
+#include "StateManager.hxx"
+#include "Console.hxx"
+#include "Control.hxx"
+#include "Switches.hxx"
+#include "M6532.hxx"
+#include "TIA.hxx"
+#include "renderFlag.hpp"
 
 namespace stella
 {
@@ -32,102 +26,128 @@ class EmuInstance : public EmuInstanceBase
 {
  public:
 
- uint8_t* _baseMem;
- uint8_t* _apuMem;
-
  EmuInstance() : EmuInstanceBase()
+ {
+  Settings::Options opts;
+  _a2600 = MediaFactory::createOSystem();
+  if(!_a2600->initialize(opts)) JAFFAR_THROW_RUNTIME("ERROR: Couldn't create A2600 System");
+ }
+
+ ~EmuInstance()
  {
  }
 
   virtual void initialize() override
   {
-    ::initialize();
   }
 
   virtual bool loadROMImpl(const std::string &romFilePath) override
   {
-    ::loadROM(romFilePath.c_str());
+    const string romfile = romFilePath;
+    const FSNode romnode(romfile);
 
+    _a2600->createConsole(romnode);
+    _ram = _a2600->console().riot().getRAM();
+    
     return true;
   }
 
   void initializeVideoOutput() override
   {
-    ::initializeVideoOutput();
+    _a2600->initializeVideo();
   }
 
   void finalizeVideoOutput() override
   {
-    ::finalizeVideoOutput();
   }
 
   void enableRendering() override
   {
+    stella::_renderingEnabled = true;
   }
 
   void disableRendering() override
   {
+    stella::_renderingEnabled = false;
   }
 
   void serializeState(jaffarCommon::serializer::Base& s) const override
   {
-    auto buffer = (uint8_t*) malloc(DUMMY_SIZE);
-    auto size = ::state_save(buffer);
-    s.push(buffer, size);
-    free (buffer);
+    Serializer gameState;
+    _a2600->state().saveState(gameState);
+    gameState.getByteArray(s.getOutputDataBuffer(), _stateSize);
+    s.pushContiguous(nullptr, _stateSize);
   }
 
   void deserializeState(jaffarCommon::deserializer::Base& d) override
   {
-    ::state_load((unsigned char*)d.getInputDataBuffer());
+    Serializer gameState;
+    gameState.putByteArray(d.getInputDataBuffer(), _stateSize);
+    _a2600->state().loadState(gameState);
+    d.popContiguous(nullptr, _stateSize);
   }
 
   size_t getStateSizeImpl() const override
   {
-    auto buffer = (uint8_t*) malloc(DUMMY_SIZE);
-    auto size = ::state_save(buffer);
-    free (buffer);
-    return size;
+    Serializer gameState;
+    _a2600->state().saveState(gameState);
+    return gameState.size();
+  }
+
+  uint8_t* getWorkRamPointer() const override
+  {
+    return (uint8_t*)(uint64_t)_ram;
   }
 
   void updateRenderer() override
   {
-    ::renderFrame();
+    _a2600->renderFrame();
   }
 
   inline size_t getDifferentialStateSizeImpl() const override { return getStateSizeImpl(); }
 
-  void enableLiteStateBlockImpl(const std::string& block)
+  void enableStateBlockImpl(const std::string& block) override
   {
-    // Nothing to do here
+    JAFFAR_THROW_LOGIC("State block name: '%s' not found.", block.c_str());
   }
 
-  void disableLiteStateBlockImpl(const std::string& block)
+  void disableStateBlockImpl(const std::string& block) override
   {
-    // Nothing to do here
+    JAFFAR_THROW_LOGIC("State block name: '%s' not found", block.c_str());
   }
 
   void doSoftReset() override
   {
+    _a2600->console().system().reset();
   }
   
   void doHardReset() override
   {
   }
 
-  std::string getCoreName() const override { return "GPGX Base"; }
+  std::string getCoreName() const override { return "Quicker Stella"; }
 
 
-  virtual void advanceStateImpl(const Controller::port_t controller1, const Controller::port_t controller2)
+  void advanceStateImpl(stella::Controller controller) override
   {
-     ::advanceFrame(controller1, controller2);
+    const auto controller1 = controller.getController1Code();
+
+    if (controller1 & 0b00000001) _a2600->console().leftController().write(::Controller::DigitalPin::One,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::One,   true);
+    if (controller1 & 0b00000010) _a2600->console().leftController().write(::Controller::DigitalPin::Two,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Two,   true);
+    if (controller1 & 0b00000100) _a2600->console().leftController().write(::Controller::DigitalPin::Three, false); else _a2600->console().leftController().write(::Controller::DigitalPin::Three, true);
+    if (controller1 & 0b00001000) _a2600->console().leftController().write(::Controller::DigitalPin::Four,  false); else _a2600->console().leftController().write(::Controller::DigitalPin::Four,  true);
+    if (controller1 & 0b00100000) _a2600->console().leftController().write(::Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Six,   true);
+    if (controller.getRightDifficultyState()) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
+    if (controller.getLeftDifficultyState())  _a2600->console().switches().values() &= ~0x40; else _a2600->console().switches().values() |= 0x40;
+    _a2600->advanceFrame();
   }
 
-  inline uint8_t* getWorkRamPointer() const override
-  {
-    return getWorkRamPtr();
-  }
+  private:
 
+  std::string _romData;
+  std::unique_ptr<OSystem> _a2600;
+  const uint8_t* _ram;
+  unique_ptr<OSystem> _theOSystem;
 };
 
 } // namespace stella

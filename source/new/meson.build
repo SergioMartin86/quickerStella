@@ -164,7 +164,8 @@ newStellaIncludeDirs = [
 newStellaCompileArgs = [
   '-DUNIX',
   '-DBSPF_UNIX',
-  '-DSDL_SUPPORT'
+  '-DSDL_SUPPORT',
+  '-D_JAFFAR_PLAY'
 ]
 
 # newStella Core Configuration

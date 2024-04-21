@@ -129,18 +129,10 @@ bool OSystem::initialize(const Settings::Options& options)
   // Get relevant information about the video hardware
   // This must be done before any graphics context is created, since
   // it may be needed to initialize the size of graphical objects
-  try
-  {
-    #ifdef _JAFFAR_PLAY
-    myFrameBuffer = make_unique<FrameBuffer>(*this);
-    myFrameBuffer->initialize();
-    #endif
-  }
-  catch(const runtime_error& e)
-  {
-    Logger::error(e.what());
-    return false;
-  }
+  #ifdef _JAFFAR_PLAY
+  myFrameBuffer = make_unique<FrameBuffer>(*this);
+  myFrameBuffer->initialize();
+  #endif
 
   // Create the event handler for the system
 #ifdef _JAFFAR_PLAY

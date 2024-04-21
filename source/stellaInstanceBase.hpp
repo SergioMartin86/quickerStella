@@ -31,11 +31,7 @@ class EmuInstanceBase
     // Parsing reset
     if (_controller.getResetButtonState() == true) doSoftReset();
 
-    // Parsing Controllers
-    const auto controller1 = _controller.getController1Code();
-    const auto controller2 = _controller.getController2Code();
-
-    advanceStateImpl(controller1, controller2);
+    advanceStateImpl(_controller);
   }
 
   inline void setController1Type(const std::string& type)
@@ -65,7 +61,7 @@ class EmuInstanceBase
     auto workRam = getWorkRamPointer();
 
     //  Getting RAM pointer and size
-    hash.Update(workRam, 0x10000);
+    hash.Update(workRam, 128);
 
     jaffarCommon::hash::hash_t result;
     hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -114,6 +110,7 @@ class EmuInstanceBase
 
   // Virtual functions
 
+  virtual uint8_t* getWorkRamPointer() const = 0;
   virtual void updateRenderer() = 0;
   virtual void serializeState(jaffarCommon::serializer::Base& s) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base& d) = 0;
@@ -124,15 +121,15 @@ class EmuInstanceBase
 
   protected:
 
-  virtual uint8_t* getWorkRamPointer() const = 0;
   virtual bool loadROMImpl(const std::string &romData) = 0;
-  virtual void advanceStateImpl(const Controller::port_t controller1, const Controller::port_t controller2) = 0;
+  virtual void advanceStateImpl(const stella::Controller controller) = 0;
 
   virtual void enableStateBlockImpl(const std::string& block) {};
   virtual void disableStateBlockImpl(const std::string& block) {};
 
   virtual size_t getStateSizeImpl() const = 0;
   virtual size_t getDifferentialStateSizeImpl() const = 0;
+  
   // State size
   size_t _stateSize;
 

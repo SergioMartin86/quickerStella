@@ -7,24 +7,16 @@
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 
-#define DUMMY_SIZE 1048576
-
-extern "C"
-{ 
- int state_load(unsigned char *state);
- int state_save(unsigned char *state);
- void initialize();
- void initializeVideoOutput();
- void finalizeVideoOutput();
- void loadROM(const char* filePath);
- void renderFrame();
- void advanceFrame(const uint16_t controller1, const uint16_t controller2);
- uint8_t* getWorkRamPtr();
- void enableVRAMBlock();
- void disableVRAMBlock();
- void enableSATMBlock();
- void disableSATMBlock();
-}
+#include "OSystem.hxx"
+#include "Settings.hxx"
+#include "MediaFactory.hxx"
+#include "Serializer.hxx"
+#include "StateManager.hxx"
+#include "Console.hxx"
+#include "Control.hxx"
+#include "Switches.hxx"
+#include "M6532.hxx"
+#include "TIA.hxx"
 
 namespace stella
 {
@@ -33,39 +25,40 @@ class EmuInstance : public EmuInstanceBase
 {
  public:
 
- uint8_t* _baseMem;
- uint8_t* _apuMem;
-
  EmuInstance() : EmuInstanceBase()
  {
-  _dummyBuffer = (uint8_t*) malloc(DUMMY_SIZE);
+  Settings::Options opts;
+  _a2600 = MediaFactory::createOSystem();
+  if(!_a2600->initialize(opts)) JAFFAR_THROW_RUNTIME("ERROR: Couldn't create A2600 System");
+
  }
 
  ~EmuInstance()
  {
-  free(_dummyBuffer);
  }
 
   virtual void initialize() override
   {
-    ::initialize();
   }
 
   virtual bool loadROMImpl(const std::string &romFilePath) override
   {
-    ::loadROM(romFilePath.c_str());
+    const string romfile = romFilePath;
+    const FSNode romnode(romfile);
 
+    _a2600->createConsole(romnode);
+    _ram = _a2600->console().riot().getRAM();
+    _a2600->console().tia()._isTiaEnabled = true;
+    
     return true;
   }
 
   void initializeVideoOutput() override
   {
-    ::initializeVideoOutput();
   }
 
   void finalizeVideoOutput() override
   {
-    ::finalizeVideoOutput();
   }
 
   void enableRendering() override
@@ -78,75 +71,85 @@ class EmuInstance : public EmuInstanceBase
 
   void serializeState(jaffarCommon::serializer::Base& s) const override
   {
-    auto size = ::state_save(_dummyBuffer);
-    s.push(_dummyBuffer, size);
+    Serializer gameState;
+    _a2600->state().saveState(gameState);
+    gameState.getByteArray(s.getOutputDataBuffer(), _stateSize);
+    s.pushContiguous(nullptr, _stateSize);
   }
 
   void deserializeState(jaffarCommon::deserializer::Base& d) override
   {
-    int size = ::state_load((unsigned char*)d.getInputDataBuffer());
-    d.popContiguous(nullptr, size);
+    Serializer gameState;
+    gameState.putByteArray(d.getInputDataBuffer(), _stateSize);
+    _a2600->state().loadState(gameState);
+    d.popContiguous(nullptr, _stateSize);
   }
 
   size_t getStateSizeImpl() const override
   {
-    auto size = ::state_save(_dummyBuffer);
-    return size;
+    Serializer gameState;
+    _a2600->state().saveState(gameState);
+    return gameState.size();
+  }
+
+  uint8_t* getWorkRamPointer() const override
+  {
+    return _ram;
   }
 
   void updateRenderer() override
   {
-    ::renderFrame();
+    _a2600->renderFrame();
   }
 
   inline size_t getDifferentialStateSizeImpl() const override { return getStateSizeImpl(); }
 
   void enableStateBlockImpl(const std::string& block) override
   {
-    if (block == "VRAM") { ::enableVRAMBlock(); return; }
-    if (block == "SATM") { ::enableSATMBlock(); return; }
+    if (block == "TIA") { _a2600->console().tia()._isTiaEnabled = true; return; }
 
     JAFFAR_THROW_LOGIC("State block name: '%s' not found.", block.c_str());
   }
 
   void disableStateBlockImpl(const std::string& block) override
   {
-    if (block == "VRAM") { ::disableVRAMBlock(); return; }
-    if (block == "SATM") { ::disableSATMBlock(); return; }
+    if (block == "TIA") { _a2600->console().tia()._isTiaEnabled = false; return; }
 
     JAFFAR_THROW_LOGIC("State block name: '%s' not found", block.c_str());
   }
 
   void doSoftReset() override
   {
+    _a2600->console().system().reset();
   }
   
   void doHardReset() override
   {
   }
 
-  std::string getCoreName() const override { return "GPGX Base"; }
+  std::string getCoreName() const override { return "QuickerStella"; }
 
 
-  virtual void advanceStateImpl(const Controller::port_t controller1, const Controller::port_t controller2)
+  void advanceStateImpl(stella::Controller controller) override
   {
-     ::advanceFrame(controller1, controller2);
-  }
+    const auto controller1 = controller.getController1Code();
 
-  inline uint8_t* getWorkRamPointer() const override
-  {
-    return getWorkRamPtr();
-  }
-
-  inline size_t getWorkRamSize() const 
-  {
-    return 0x10000;
+    if (controller1 & 0b00000001) _a2600->console().leftController().write(::Controller::DigitalPin::One,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::One,   true);
+    if (controller1 & 0b00000010) _a2600->console().leftController().write(::Controller::DigitalPin::Two,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Two,   true);
+    if (controller1 & 0b00000100) _a2600->console().leftController().write(::Controller::DigitalPin::Three, false); else _a2600->console().leftController().write(::Controller::DigitalPin::Three, true);
+    if (controller1 & 0b00001000) _a2600->console().leftController().write(::Controller::DigitalPin::Four,  false); else _a2600->console().leftController().write(::Controller::DigitalPin::Four,  true);
+    if (controller1 & 0b00100000) _a2600->console().leftController().write(::Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Six,   true);
+    if (controller.getRightDifficultyState()) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
+    if (controller.getLeftDifficultyState())  _a2600->console().switches().values() &= ~0x40; else _a2600->console().switches().values() |= 0x40;
+    _a2600->advanceFrame();
   }
 
   private:
 
-  uint8_t* _dummyBuffer;
-
+  std::string _romData;
+  std::unique_ptr<OSystem> _a2600;
+  uint8_t* _ram;
+  unique_ptr<OSystem> _theOSystem;
 };
 
 } // namespace stella

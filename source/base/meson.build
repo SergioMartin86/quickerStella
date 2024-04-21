@@ -165,8 +165,7 @@ baseStellaIncludeDirs = [
 
 baseStellaCompileArgs = [
   '-DUNIX',
-  '-DBSPF_UNIX',
-  
+  '-DBSPF_UNIX'
 ]
 
 # baseStella Core Configuration

@@ -7,6 +7,9 @@
 #include <string>
 #include <sstream>
 
+namespace stella
+{
+
 class Controller
 {
 public:
@@ -166,3 +169,5 @@ public:
   controller_t _controller1Type;
   controller_t _controller2Type;
 };
+
+} // namespace stella

@@ -7,6 +7,7 @@
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 
+#include "EventHandlerSDL2.hxx"
 #include "OSystem.hxx"
 #include "Settings.hxx"
 #include "MediaFactory.hxx"

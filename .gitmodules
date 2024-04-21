@@ -3,4 +3,4 @@
 	url = https://github.com/SergioMartin86/jaffarCommon.git
 [submodule "source/base/core"]
 	path = source/base/core
-	url = https://github.com/stella-emu/stella.git
+	url = https://github.com/SergioMartin86/stella.git

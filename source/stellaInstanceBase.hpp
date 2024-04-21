@@ -10,7 +10,7 @@
 
 #include "controller.hpp"
 
-namespace gpgx
+namespace stella
 {
 
 class EmuInstanceBase
@@ -38,27 +38,12 @@ class EmuInstanceBase
     advanceStateImpl(controller1, controller2);
   }
 
-  inline void setSystemType(const std::string& type)
-  {
-    bool isTypeRecognized = false;
-
-    if (type == "Sega Genesis") { _controller.setSystemType(Controller::system_t::genesis); isTypeRecognized = true; }
-    if (type == "Sega Game Gear")  { _controller.setSystemType(Controller::system_t::gamegear);  isTypeRecognized = true; }
-    if (type == "Sega Master System") { _controller.setSystemType(Controller::system_t::sms); isTypeRecognized = true; }
-    if (type == "Sega CD") { _controller.setSystemType(Controller::system_t::segacd); isTypeRecognized = true; }
-
-    if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Input type not recognized: '%s'\n", type.c_str());
-  }
-
   inline void setController1Type(const std::string& type)
   {
     bool isTypeRecognized = false;
 
     if (type == "None") { _controller.setController1Type(Controller::controller_t::none); isTypeRecognized = true; }
-    if (type == "GameGear2B") { _controller.setController1Type(Controller::controller_t::gamegear2b);  isTypeRecognized = true; }
-    if (type == "Gamepad2B")  { _controller.setController1Type(Controller::controller_t::gamepad2b); isTypeRecognized = true; }
-    if (type == "Gamepad3B")  { _controller.setController1Type(Controller::controller_t::gamepad3b); isTypeRecognized = true; }
-    if (type == "Gamepad6B")  { _controller.setController1Type(Controller::controller_t::gamepad6b); isTypeRecognized = true; }
+    if (type == "Gamepad") { _controller.setController1Type(Controller::controller_t::gamepad);  isTypeRecognized = true; }
 
     if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Input type not recognized: '%s'\n", type.c_str());
   }
@@ -68,10 +53,7 @@ class EmuInstanceBase
     bool isTypeRecognized = false;
 
     if (type == "None") { _controller.setController2Type(Controller::controller_t::none); isTypeRecognized = true; }
-    if (type == "GameGear2B") { _controller.setController2Type(Controller::controller_t::gamegear2b);  isTypeRecognized = true; }
-    if (type == "Gamepad2B")  { _controller.setController2Type(Controller::controller_t::gamepad2b); isTypeRecognized = true; }
-    if (type == "Gamepad3B")  { _controller.setController2Type(Controller::controller_t::gamepad3b); isTypeRecognized = true; }
-    if (type == "Gamepad6B")  { _controller.setController2Type(Controller::controller_t::gamepad6b); isTypeRecognized = true; }
+    if (type == "Gamepad") { _controller.setController2Type(Controller::controller_t::gamepad);  isTypeRecognized = true; }
     
     if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Input type not recognized: '%s'\n", type.c_str());
   }
@@ -163,4 +145,4 @@ class EmuInstanceBase
   size_t _differentialStateSize;
 };
 
-} // namespace gpgx
+} // namespace stella

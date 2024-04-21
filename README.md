@@ -18,7 +18,7 @@ Improvements
 Credits
 ---------
 
-- Stella is developed by several authors under the GPL-2.0 license. For more information see: https://github.com/stella-emu/stella
+- Stella is developed by Stephen Anthony and others under the GPL-2.0 license. For more information see: https://github.com/stella-emu/stella
 
 All base code for this project was found under open source licenses, which I preserved in their corresponding files/folders. Any non-credited work is unintentional and shall be immediately rectfied.
 

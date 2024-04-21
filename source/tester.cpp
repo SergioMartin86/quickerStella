@@ -9,7 +9,7 @@
 #include <jaffarCommon/timing.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/file.hpp>
-#include "gpgxInstance.hpp"
+#include "stellaInstance.hpp"
 #include <chrono>
 #include <sstream>
 #include <vector>
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
   const auto differentialCompressionUseZlib = differentialCompressionJs["Use Zlib"].get<bool>();
 
   // Creating emulator instance
-  auto e = gpgx::EmuInstance();
+  auto e = stella::EmuInstance();
 
   // Initializing emulator instance
   e.initialize();
@@ -122,9 +122,6 @@ int main(int argc, char *argv[])
   e.setController1Type(controller1Type);
   e.setController2Type(controller2Type);
 
-  // Setting system type
-  e.setSystemType(systemType);
-  
   // Loading ROM File
   std::string romFileData;
   if (jaffarCommon::file::loadStringFromFile(romFileData, romFilePath) == false) JAFFAR_THROW_LOGIC("Could not rom file: %s\n", romFilePath.c_str());

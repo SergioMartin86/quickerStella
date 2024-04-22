@@ -166,7 +166,8 @@ newStellaCompileArgs = [
   '-DUNIX',
   '-DBSPF_UNIX',
   '-DSDL_SUPPORT',
-  '-D_JAFFAR_PLAY'
+  '-D_JAFFAR_PLAY',
+  '-Werror'
 ]
 
 # newStella Core Configuration

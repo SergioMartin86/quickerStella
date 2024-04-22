@@ -319,6 +319,7 @@ FBInitStatus OSystem::createFrameBuffer()
   FBInitStatus fbstatus = FBInitStatus::FailComplete;
   if((fbstatus = myConsole->initializeVideo()) != FBInitStatus::Success)
   return fbstatus;
+  return fbstatus;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

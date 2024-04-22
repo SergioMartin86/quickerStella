@@ -1893,7 +1893,6 @@ void EventHandler::setActionMappings(EventMode mode)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void EventHandler::setComboMap()
 {
-  const Int32 version = myOSystem.settings().getInt("event_ver");
   const string serializedMapping = myOSystem.settings().getString("combomap");
 
 

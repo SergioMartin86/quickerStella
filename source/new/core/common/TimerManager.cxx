@@ -42,6 +42,7 @@ TimerManager::TimerId TimerManager::addTimer(
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool TimerManager::clear(TimerId id)
 {
+  return false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

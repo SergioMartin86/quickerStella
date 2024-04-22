@@ -22,13 +22,6 @@
 
 using namespace std::chrono;
 
-namespace {
-  string currentTimestamp()
-  {
-    return "";
-  }
-} // namespace
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StaggeredLogger::StaggeredLogger(string_view message, Logger::Level level)
   : myMessage{message},

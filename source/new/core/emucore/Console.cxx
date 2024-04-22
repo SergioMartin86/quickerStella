@@ -688,7 +688,7 @@ if (stella::_renderingEnabled)
     if(fbstatus != FBInitStatus::Success)    return fbstatus;
     myOSystem.frameBuffer().showFrameStats( myOSystem.settings().getBool(devSettings ? "dev.stats" : "plr.stats"));
 }
-#endif();
+#endif
   }
   return fbstatus;
 }

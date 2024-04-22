@@ -229,22 +229,7 @@ bool GlobalKeyHandler::skipAVSetting() const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool GlobalKeyHandler::skipInputSetting() const
 {
-  const bool grabMouseAllowed = myOSystem.frameBuffer().grabMouseAllowed();
-  const bool analog = myOSystem.console().leftController().isAnalog()
-    || myOSystem.console().rightController().isAnalog();
-  const bool joystick = isJoystick(myOSystem.console().leftController())
-    || isJoystick(myOSystem.console().rightController());
-  const bool paddle = isPaddle(myOSystem.console().leftController())
-    || isPaddle(myOSystem.console().rightController());
-  const bool trackball = isTrackball(myOSystem.console().leftController())
-    || isTrackball(myOSystem.console().rightController());
-  const bool driving =
-    myOSystem.console().leftController().type() == Controller::Type::Driving
-    || myOSystem.console().rightController().type() == Controller::Type::Driving;
-  const bool useMouse =
-    BSPF::equalsIgnoreCase("always", myOSystem.settings().getString("usemouse"))
-    || (BSPF::equalsIgnoreCase("analog", myOSystem.settings().getString("usemouse"))
-      && analog);
+  return false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -5,10 +5,12 @@ testTimeout = 240
 
 # Tests for copyrighted game roms (only for local testing or own CI runners)
 protectedTestSet = [ 
+  'frogger.anyPercent'
 ]
 
 # Tests for open source free roms (for public cloud testing)
 openSourceTestSet = [
+  'hellway.playaround',
 ]
 
 # Creating test set based on whether copyrighted roms are to be used
@@ -25,18 +27,6 @@ foreach testFile : testSet
        bash,
        workdir : meson.current_source_dir(),
        timeout: testTimeout,
-       args : [ 'run_test.sh', baseGPGXTester.path(),  newGPGXTester.path(), testFile + '.test', testFile + '.sol' ],
+       args : [ 'run_test.sh', baseStellaTester.path(),  newStellaTester.path(), testFile + '.test', testFile + '.sol' ],
        suite : [ testSuite ])
 endforeach
-
-# Testing save start
-
-#testFile = 'game.savestart'
-#testSuite = testFile.split('.')[0]
-#testName = testFile.split('.')[1]
-#test(testName,
-#       newGPGXTester,
-#       workdir : meson.current_source_dir(),
-#       timeout: testTimeout,
-#       args : [  testFile + '.test', testFile + '.sol', '--cycleType', 'Rerecord' ],
-#       suite : [ testSuite ])

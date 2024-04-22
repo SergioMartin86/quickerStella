@@ -333,8 +333,7 @@ bool StateManager::loadState(Serializer& in)
       {
         // First test if we have a valid header
         // If so, do a complete state load using the Console
-        return in.getString() == STATE_HEADER &&
-               myOSystem.console().load(in);
+        return myOSystem.console().load(in);
       }
     }
   return false;
@@ -350,10 +349,6 @@ bool StateManager::saveState(Serializer& out)
       // Make sure the file can be opened for writing
       if(out)
       {
-        // Add header so that if the state format changes in the future,
-        // we'll know right away, without having to parse the rest of the file
-        out.putString(STATE_HEADER);
-
         // Do a complete state save using the Console
         if(myOSystem.console().save(out))
           return true;

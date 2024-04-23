@@ -93,6 +93,8 @@ class OSystem
     */
     FBInitStatus createFrameBuffer();
 
+    void allocateFrameBuffer();
+
   public:
     void initializeVideo();
 

@@ -173,7 +173,7 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   // Pause audio and clear framebuffer while autodetection runs
   myOSystem.sound().pause(true);
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   if (stella::_renderingEnabled) myOSystem.frameBuffer().clear();
 #endif
 
@@ -223,9 +223,8 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
 
   setTIAProperties();
 
+#ifdef _JAFFAR_PLAYER
   const bool joyallow4 = myOSystem.settings().getBool("joyallow4");
-
-#ifdef _JAFFAR_PLAY
   myOSystem.eventHandler().allowAllDirections(joyallow4);
 #endif
 
@@ -303,13 +302,13 @@ void Console::autodetectFrameLayout(bool reset)
   for(int i = 0; i < 20; ++i)
     myTIA->update();
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   if (stella::_renderingEnabled) FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), true);
 #endif
 
   myTIA->update();
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   if (stella::_renderingEnabled) FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), false);
 #endif
 
@@ -673,6 +672,7 @@ FBInitStatus Console::initializeVideo(bool full)
 
   if(full)
   {
+    #ifdef _JAFFAR_PLAYER
     auto size = myOSystem.settings().getBool("tia.correct_aspect") ?
       Common::Size(TIAConstants::viewableWidth, TIAConstants::viewableHeight) :
       Common::Size(2 * myTIA->width(), myTIA->height());
@@ -681,7 +681,7 @@ FBInitStatus Console::initializeVideo(bool full)
     const string title = string{"Stella "} + STELLA_VERSION +
                    ": \"" + myProperties.get(PropType::Cart_Name) + "\"";
 
-#ifdef _JAFFAR_PLAY
+
 if (stella::_renderingEnabled) 
 {
     fbstatus = myOSystem.frameBuffer().createDisplay(title,  BufferType::Emulator, size, false);
@@ -696,7 +696,7 @@ if (stella::_renderingEnabled)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::initializeAudio()
 {
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   myEmulationTiming
     .updatePlaybackRate(myAudioSettings.sampleRate())
     .updatePlaybackPeriod(myAudioSettings.fragmentSize())

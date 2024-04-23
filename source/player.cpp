@@ -110,6 +110,9 @@ int main(int argc, char *argv[])
   // Initializing emulator instance
   e.initialize();
 
+  // If rendering enabled, then initailize it now
+  if (disableRender == false) e.enableRendering();
+  
   // Initializing video output
   if (disableRender == false) e.initializeVideoOutput();
 
@@ -155,9 +158,6 @@ int main(int argc, char *argv[])
 
   // Flag to display frame information
   bool showFrameInfo = true;
-
-  // If rendering enabled, then initailize it now
-  if (disableRender == false) e.enableRendering();
 
   // Interactive section
   while (continueRunning)

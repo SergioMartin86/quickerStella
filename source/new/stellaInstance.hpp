@@ -28,25 +28,31 @@ class EmuInstance : public EmuInstanceBase
 
  EmuInstance() : EmuInstanceBase()
  {
-  Settings::Options opts;
-  _a2600 = MediaFactory::createOSystem();
-  if(!_a2600->initialize(opts)) JAFFAR_THROW_RUNTIME("ERROR: Couldn't create A2600 System");
-
+   _dummyAllocation = malloc(1024 * 64);
  }
 
  ~EmuInstance()
  {
+  free(_dummyAllocation);
  }
 
   virtual void initialize() override
   {
+    Settings::Options opts;
+    _a2600 = MediaFactory::createOSystem();
+    if(!_a2600->initialize(opts)) JAFFAR_THROW_RUNTIME("ERROR: Couldn't create A2600 System");
+
+    #ifdef _JAFFAR_PLAYER
+    _a2600->allocateFrameBuffer();
+    _a2600->initializeVideo();
+    #endif
   }
 
   virtual bool loadROMImpl(const std::string &romFilePath) override
   {
     const string romfile = romFilePath;
     const FSNode romnode(romfile);
-
+ 
     _a2600->createConsole(romnode);
     _ram = _a2600->console().riot().getRAM();
     _a2600->console().tia()._isTiaEnabled = true;
@@ -56,7 +62,6 @@ class EmuInstance : public EmuInstanceBase
 
   void initializeVideoOutput() override
   {
-    _a2600->initializeVideo();
   }
 
   void finalizeVideoOutput() override
@@ -77,7 +82,10 @@ class EmuInstance : public EmuInstanceBase
   {
     Serializer gameState;
     _a2600->state().saveState(gameState);
-    gameState.getByteArray(s.getOutputDataBuffer(), _stateSize);
+
+    void* buffer = s.getOutputDataBuffer();
+    if (buffer == nullptr) buffer = _dummyAllocation;
+    gameState.getByteArray((uint8_t*)buffer, _stateSize);
     s.pushContiguous(nullptr, _stateSize);
   }
 
@@ -99,6 +107,11 @@ class EmuInstance : public EmuInstanceBase
   uint8_t* getWorkRamPointer() const override
   {
     return _ram;
+  }
+
+  size_t getWorkRamSize() const
+  {
+    return 128;
   }
 
   void updateRenderer() override
@@ -145,7 +158,11 @@ class EmuInstance : public EmuInstanceBase
     if (controller1 & 0b00100000) _a2600->console().leftController().write(::Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Six,   true);
     if (controller.getRightDifficultyState()) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
     if (controller.getLeftDifficultyState())  _a2600->console().switches().values() &= ~0x40; else _a2600->console().switches().values() |= 0x40;
+
+    auto tmp = stella::_renderingEnabled;
+    stella::_renderingEnabled = false;
     _a2600->advanceFrame();
+    stella::_renderingEnabled = tmp;
   }
 
   private:
@@ -154,6 +171,7 @@ class EmuInstance : public EmuInstanceBase
   std::unique_ptr<OSystem> _a2600;
   uint8_t* _ram;
   unique_ptr<OSystem> _theOSystem;
+  void* _dummyAllocation;
 };
 
 } // namespace stella

@@ -120,14 +120,19 @@ OSystem::~OSystem()
 #endif
 }
 
+void OSystem::allocateFrameBuffer()
+{
+  myFrameBuffer = make_unique<FrameBuffer>(*this);
+}
+
 void OSystem::initializeVideo()
 {
   // NOTE: The framebuffer MUST be created before any other object!!!
   // Get relevant information about the video hardware
   // This must be done before any graphics context is created, since
   // it may be needed to initialize the size of graphical objects
-  #ifdef _JAFFAR_PLAY
-  myFrameBuffer = make_unique<FrameBuffer>(*this);
+  #ifdef _JAFFAR_PLAYER
+  
   myFrameBuffer->initialize();
   #endif
 }
@@ -639,7 +644,7 @@ double OSystem::dispatchEmulation()
   const EmulationTiming& timing = myConsole->emulationTiming();
   DispatchResult dispatchResult;
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   bool framePending = false;
   if (stella::_renderingEnabled)
   {
@@ -656,7 +661,7 @@ double OSystem::dispatchEmulation()
 
   tia.update(timing.maxCyclesPerTimeslice());
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
   if (stella::_renderingEnabled)
   {
     // Render the frame. This may block, but emulation will continue to run on

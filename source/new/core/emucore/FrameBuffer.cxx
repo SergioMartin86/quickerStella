@@ -80,7 +80,7 @@ void FrameBuffer::initialize()
   // else can be used
   myBackend = MediaFactory::createVideoBackend(myOSystem);
 
-  // Get desktop resolution and supported renderers
+  // // Get desktop resolution and supported renderers
   myBackend->queryHardware(myFullscreenDisplays, myWindowedDisplays, myRenderers);
 
   const size_t numDisplays = myWindowedDisplays.size();
@@ -120,7 +120,7 @@ void FrameBuffer::initialize()
   setupFonts();
 #endif
 
-  setUIPalette();
+  // setUIPalette();
 
   myGrabMouse = myOSystem.settings().getBool("grabmouse");
 

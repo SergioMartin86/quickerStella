@@ -166,7 +166,6 @@ newStellaCompileArgs = [
   '-DUNIX',
   '-DBSPF_UNIX',
   '-DSDL_SUPPORT',
-  '-D_JAFFAR_PLAY',
   '-Werror'
 ]
 

@@ -25,7 +25,7 @@ if get_option('buildPlayer') == true
 
   newStellaPlayer = executable('newStellaPlayer',
     'source/player.cpp',
-    cpp_args            : [ commonCompileArgs, '-DNCURSES' ],
+    cpp_args            : [ commonCompileArgs, '-DNCURSES', '-D_JAFFAR_PLAYER' ],
     dependencies        : [ newStellaDependency,
                             jaffarCommonDependency
                           ],

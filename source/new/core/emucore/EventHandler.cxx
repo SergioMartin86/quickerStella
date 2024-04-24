@@ -96,9 +96,9 @@ void EventHandler::initialize()
 
   // Make sure the event/action mappings are correctly set,
   // and fill the ActionList structure with valid values
-  setComboMap();
-  setActionMappings(EventMode::kEmulationMode);
-  setActionMappings(EventMode::kMenuMode);
+  // setComboMap();
+  // setActionMappings(EventMode::kEmulationMode);
+  // setActionMappings(EventMode::kMenuMode);
 
   Controller::setDigitalDeadZone(myOSystem.settings().getInt("joydeadzone"));
   Controller::setAnalogDeadZone(myOSystem.settings().getInt("adeadzone"));
@@ -2463,7 +2463,7 @@ void EventHandler::setState(EventHandlerState state)
       break;
   }
 
-#ifdef _JAFFAR_PLAY
+#ifdef _JAFFAR_PLAYER
 if (stella::_renderingEnabled)
  {
   // Inform various subsystems about the new state

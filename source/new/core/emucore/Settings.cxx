@@ -38,6 +38,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Settings::Settings()
 {
+  #ifdef _JAFFAR_PLAYER
   // If no version is recorded with the persisted settings, we set it to zero
   setPermanent(SETTINGS_VERSION_KEY, 0);
   setPermanent("stella.version", "6.2.1");
@@ -292,6 +293,7 @@ Settings::Settings()
   setPermanent("dev.thumb.cyclefactor", "1.05");
   setPermanent("dev.thumb.chiptype", "0"); // = LPC2103
   setPermanent("dev.thumb.mammode", "2");
+#endif
 #endif
 }
 

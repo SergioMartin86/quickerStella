@@ -126,7 +126,7 @@ class EmuInstance : public EmuInstanceBase
   {
   }
 
-  std::string getCoreName() const override { return "Quicker Stella"; }
+  std::string getCoreName() const override { return "Stella"; }
 
 
   void advanceStateImpl(stella::Controller controller) override

@@ -1,0 +1,14 @@
+{
+  "Rom File": "roms/Pitfall! (1982) (Activision) [!].a26",
+  "Expected ROM SHA1": "8D525480445D48CC48460DC666EBAD78C8FB7B73",
+  "Initial State File": "",
+  "Disable State Blocks": [ ],
+  "Controller 1 Type": "Gamepad",
+  "Controller 2 Type": "None",
+  "Differential Compression":
+  {
+    "Enabled": false,
+    "Max Differences": 2200,
+    "Use Zlib": true
+  }
+}

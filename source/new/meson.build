@@ -150,6 +150,7 @@ newStellaSrc =  [
 
 newStellaIncludeDirs = [
  '.',
+ '..',
  'core/',
  'core/common',
  'core/common/audio',

@@ -7,8 +7,7 @@
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
-
-#include "controller.hpp"
+#include "inputParser.hpp"
 
 namespace stella
 {
@@ -17,42 +16,24 @@ class EmuInstanceBase
 {
   public:
 
-  EmuInstanceBase() = default;
+  EmuInstanceBase(const nlohmann::json &config)
+  {
+    _inputParser = std::make_unique<jaffar::InputParser>(config);
+  }
+
   virtual ~EmuInstanceBase() = default;
 
-  inline void advanceState(const std::string &move)
+  virtual void advanceState(const jaffar::input_t &input)
   {
-    bool isInputValid = _controller.parseInputString(move);
-    if (isInputValid == false) JAFFAR_THROW_LOGIC("Move provided cannot be parsed: '%s'\n", move.c_str());
-
     // Parsing power
-    if (_controller.getPowerButtonState() == true) JAFFAR_THROW_RUNTIME("Power button pressed, but not supported: '%s'\n", move.c_str());
+    if (input.power == true) JAFFAR_THROW_RUNTIME("Power button pressed, but not supported");
 
     // Parsing reset
-    if (_controller.getResetButtonState() == true) doSoftReset();
+    if (input.reset == true) doSoftReset();
 
-    advanceStateImpl(_controller);
+    advanceStateImpl(input);
   }
 
-  inline void setController1Type(const std::string& type)
-  {
-    bool isTypeRecognized = false;
-
-    if (type == "None") { _controller.setController1Type(Controller::controller_t::none); isTypeRecognized = true; }
-    if (type == "Gamepad") { _controller.setController1Type(Controller::controller_t::gamepad);  isTypeRecognized = true; }
-
-    if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Input type not recognized: '%s'\n", type.c_str());
-  }
-
-  inline void setController2Type(const std::string& type)
-  {
-    bool isTypeRecognized = false;
-
-    if (type == "None") { _controller.setController2Type(Controller::controller_t::none); isTypeRecognized = true; }
-    if (type == "Gamepad") { _controller.setController2Type(Controller::controller_t::gamepad);  isTypeRecognized = true; }
-    
-    if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Input type not recognized: '%s'\n", type.c_str());
-  }
 
   inline jaffarCommon::hash::hash_t getStateHash() const
   {
@@ -108,6 +89,8 @@ class EmuInstanceBase
     return _differentialStateSize;
   }
 
+  inline jaffar::InputParser *getInputParser() const { return _inputParser.get(); }
+  
   // Virtual functions
 
   virtual uint8_t* getWorkRamPointer() const = 0;
@@ -122,7 +105,7 @@ class EmuInstanceBase
   protected:
 
   virtual bool loadROMImpl(const std::string &romData) = 0;
-  virtual void advanceStateImpl(const stella::Controller controller) = 0;
+  virtual void advanceStateImpl(const jaffar::input_t &input) = 0;
 
   virtual void enableStateBlockImpl(const std::string& block) {};
   virtual void disableStateBlockImpl(const std::string& block) {};
@@ -135,8 +118,8 @@ class EmuInstanceBase
 
   private:
 
-  // Controller class for input parsing
-  Controller _controller;
+  // Input parser instance
+  std::unique_ptr<jaffar::InputParser> _inputParser;
 
   // Differential state size
   size_t _differentialStateSize;

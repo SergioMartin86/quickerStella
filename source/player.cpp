@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
   jaffarCommon::logger::refreshTerminal();
 
   // Creating emulator instance  
-  auto e = stella::EmuInstance();
+  auto e = stella::EmuInstance(configJs);
 
   // Initializing emulator instance
   e.initialize();
@@ -116,10 +116,6 @@ int main(int argc, char *argv[])
   // Initializing video output
   if (disableRender == false) e.initializeVideoOutput();
 
-  // Setting controller types
-  e.setController1Type(controller1Type);
-  e.setController2Type(controller2Type);
-  
   // Loading ROM File
   std::string romFileData;
   if (jaffarCommon::file::loadStringFromFile(romFileData, romFilePath) == false) JAFFAR_THROW_LOGIC("Could not rom file: %s\n", romFilePath.c_str());

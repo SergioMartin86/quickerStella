@@ -163,8 +163,8 @@ public:
     
     c = ss.get();
     if (c != '.' && c != 'l') reportBadInputString(inputString);
-    if (c == 'l') input.leftDifficulty = false;
-    if (c == '.') input.leftDifficulty = true;
+    if (c == 'l') input.leftDifficulty = true;
+    if (c == '.') input.leftDifficulty = false;
 
     c = ss.get();
     if (c != '.' && c != 'r') reportBadInputString(inputString);

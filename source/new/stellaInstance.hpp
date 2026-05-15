@@ -154,8 +154,18 @@ class EmuInstance : public EmuInstanceBase
     if (input.port1 & 0b00000100) _a2600->console().leftController().write(::Controller::DigitalPin::Three, false); else _a2600->console().leftController().write(::Controller::DigitalPin::Three, true);
     if (input.port1 & 0b00001000) _a2600->console().leftController().write(::Controller::DigitalPin::Four,  false); else _a2600->console().leftController().write(::Controller::DigitalPin::Four,  true);
     if (input.port1 & 0b00100000) _a2600->console().leftController().write(::Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(::Controller::DigitalPin::Six,   true);
-    if (input.rightDifficulty) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
-    if (input.leftDifficulty)  _a2600->console().switches().values() &= ~0x40; else _a2600->console().switches().values() |= 0x40;
+
+    if (input.rightDifficulty) 
+    {
+      if (_a2600->console().switches().values() & 0x01) _a2600->console().switches().values() &= ~0x01;
+      else _a2600->console().switches().values() |= 0x01;
+    }
+
+    if (input.leftDifficulty) 
+    {
+      if (_a2600->console().switches().values() & 0x40) _a2600->console().switches().values() &= ~0x40;
+      else _a2600->console().switches().values() |= 0x40;
+    }
 
     auto tmp = stella::_renderingEnabled;
     stella::_renderingEnabled = false;

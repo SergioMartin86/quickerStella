@@ -193,7 +193,7 @@ void TIA::initialize()
 
   // Must be done last, after all other items have reset
   const bool devSettings = mySettings.getBool("dev.settings");
-  setFixedColorPalette(mySettings.getString("tia.dbgcolors"));
+  setFixedColorPalette("roygpb");
   enableFixedColors(
     mySettings.getBool(devSettings ? "dev.debugcolors" : "plr.debugcolors"));
 
@@ -257,7 +257,7 @@ void TIA::installDelegate(System& system, Device& device)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool TIA::save(Serializer& out) const
 {
- if (_isTiaEnabled == false) return true;
+//  if (_isTiaEnabled == false) return true;
 
   try
   {
@@ -334,7 +334,7 @@ bool TIA::save(Serializer& out) const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool TIA::load(Serializer& in)
 {
- if (_isTiaEnabled == false) return true;
+//  if (_isTiaEnabled == false) return true;
 
   try
   {
@@ -1420,9 +1420,9 @@ void TIA::onHalt()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void TIA::cycle(uInt32 colorClocks)
+FORCE_INLINE void TIA::cycle(uInt32 colorClocks)
 {
-  if (_isTiaEnabled == false) return;
+  // if (_isTiaEnabled == false) return;
 
   for (uInt32 i = 0; i < colorClocks; ++i)
   {
@@ -1448,7 +1448,7 @@ void TIA::cycle(uInt32 colorClocks)
       nextLine();
 
   #ifdef SOUND_SUPPORT
-    myAudio.tick();
+   if (_isTiaEnabled == true) myAudio.tick();
   #endif
 
     ++myTimestamp;
@@ -1485,7 +1485,7 @@ FORCE_INLINE void TIA::tickMovement()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void TIA::tickHblank()
+FORCE_INLINE void TIA::tickHblank()
 {
   switch (myHctr) {
     case 0:
@@ -1509,7 +1509,7 @@ void TIA::tickHblank()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-inline void TIA::tickHframe()
+FORCE_INLINE void TIA::tickHframe()
 {
   uInt32 y = 0;
   if (stella::_renderingEnabled) y = myFrameManager->getY();
@@ -1524,7 +1524,7 @@ inline void TIA::tickHframe()
   myPlayer1.tick();
   myBall.tick();
 
-  if (stella::_renderingEnabled) if (myFrameManager->isRendering())  renderPixel(x, y);
+  if (_isTiaEnabled == true) if (stella::_renderingEnabled) if (myFrameManager->isRendering())  renderPixel(x, y);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1572,6 +1572,8 @@ FORCE_INLINE void TIA::nextLine()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::cloneLastLine()
 {
+  if (_isTiaEnabled == false) return;
+
   if(myIsLayoutDetector)
   {
     // y is always 0 in FrameLayoutDetector
@@ -1755,7 +1757,7 @@ void TIA::setBlInvertedPhaseClock(bool enable)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::delayedWrite(uInt8 address, uInt8 value)
 {
- if (_isTiaEnabled == false) return;
+//  if (_isTiaEnabled == false) return;
 
   if (address < 64)
     myShadowRegisters[address] = value;

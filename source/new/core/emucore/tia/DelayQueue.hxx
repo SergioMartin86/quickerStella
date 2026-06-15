@@ -54,6 +54,12 @@ class DelayQueue : public Serializable
     uInt8 myIndex{0};
     std::array<uInt8, 0xFF> myIndices;
 
+    // Total number of entries scheduled across all members. Lets execute()
+    // take a fast path (just advance the index) on the very common color
+    // clocks where nothing is pending. Derived state: not serialized, it is
+    // recomputed in load().
+    uInt32 myPendingCount{0};
+
   private:
     DelayQueue(const DelayQueue&) = delete;
     DelayQueue(DelayQueue&&) = delete;
@@ -82,10 +88,14 @@ void DelayQueue<length, capacity>::push(uInt8 address, uInt8 value, uInt8 delay)
   const uInt8 currentIndex = myIndices[address];
 
   if (currentIndex < length)
+  {
     myMembers[currentIndex].remove(address);
+    --myPendingCount;
+  }
 
   const uInt8 index = smartmod<length>(myIndex + delay);
   myMembers[index].push(address, value);
+  ++myPendingCount;
 
   myIndices[address] = index;
 }
@@ -98,6 +108,7 @@ void DelayQueue<length, capacity>::reset()
     myMembers[i].clear();
 
   myIndex = 0;
+  myPendingCount = 0;
   myIndices.fill(0xFF);
 }
 
@@ -106,14 +117,21 @@ template<unsigned length, unsigned capacity>
 template<typename T>
 void DelayQueue<length, capacity>::execute(T executor)
 {
-  DelayQueueMember<capacity>& currentMember = myMembers[myIndex];
+  // Fast path: nothing is scheduled anywhere in the queue, which is the case
+  // on the vast majority of color clocks. Skip touching the member array
+  // entirely and just advance the index.
+  if (myPendingCount != 0)
+  {
+    DelayQueueMember<capacity>& currentMember = myMembers[myIndex];
 
-  for (uInt8 i = 0; i < currentMember.mySize; ++i) {
-    executor(currentMember.myEntries[i].address, currentMember.myEntries[i].value);
-    myIndices[currentMember.myEntries[i].address] = 0xFF;
+    for (uInt8 i = 0; i < currentMember.mySize; ++i) {
+      executor(currentMember.myEntries[i].address, currentMember.myEntries[i].value);
+      myIndices[currentMember.myEntries[i].address] = 0xFF;
+    }
+
+    myPendingCount -= currentMember.mySize;
+    currentMember.clear();
   }
-
-  currentMember.clear();
 
   myIndex = smartmod<length>(myIndex + 1);
 }
@@ -154,6 +172,11 @@ bool DelayQueue<length, capacity>::load(Serializer& in)
 
     myIndex = in.getByte();
     in.getByteArray(myIndices.data(), myIndices.size());
+
+    // Recompute derived pending-entry count from the restored members.
+    myPendingCount = 0;
+    for (uInt32 i = 0; i < length; ++i)
+      myPendingCount += myMembers[i].mySize;
   }
   catch(...)
   {

@@ -1,0 +1,14 @@
+{
+  "Rom File": "roms/Galaxian (USA).a26",
+  "Expected ROM SHA1": "B081B327AC32D951C36CB4B3FF812BE95685D52F",
+  "Initial State File": "",
+  "Disable State Blocks": [ "TIA" ],
+  "Controller 1 Type": "Gamepad",
+  "Controller 2 Type": "None",
+  "Differential Compression":
+  {
+    "Enabled": false,
+    "Max Differences": 2200,
+    "Use Zlib": true
+  }
+}

@@ -148,7 +148,8 @@ bool DelayQueue<length, capacity>::save(Serializer& out) const
       myMembers[i].save(out);
 
     out.putByte(myIndex);
-    out.putByteArray(myIndices.data(), myIndices.size());
+    // myIndices is the reverse map (address -> member) of the members above,
+    // so it is derived state and recomputed on load instead of serialized.
   }
   catch(...)
   {
@@ -171,12 +172,18 @@ bool DelayQueue<length, capacity>::load(Serializer& in)
       myMembers[i].load(in);
 
     myIndex = in.getByte();
-    in.getByteArray(myIndices.data(), myIndices.size());
 
-    // Recompute derived pending-entry count from the restored members.
+    // Rebuild derived state (the address -> member reverse map and the pending
+    // entry count) from the restored members.
+    myIndices.fill(0xFF);
     myPendingCount = 0;
     for (uInt32 i = 0; i < length; ++i)
-      myPendingCount += myMembers[i].mySize;
+    {
+      const DelayQueueMember<capacity>& member = myMembers[i];
+      myPendingCount += member.mySize;
+      for (uInt8 j = 0; j < member.mySize; ++j)
+        myIndices[member.myEntries[j].address] = static_cast<uInt8>(i);
+    }
   }
   catch(...)
   {

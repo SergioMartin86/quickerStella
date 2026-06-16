@@ -110,12 +110,16 @@ bool DelayQueueMember<capacity>::save(Serializer& out) const
 {
   try
   {
+    // Serialize a fixed `capacity` entries (zero-padding the unused slots) so
+    // that the serialized size is constant regardless of how many entries are
+    // pending. A variable size here makes the whole emulator state size vary,
+    // which silently truncates/corrupts fixed-size state buffers on save/load.
     out.putByte(mySize);
-    for(uInt8 i = 0; i < mySize; ++i)
+    for(uInt32 i = 0; i < capacity; ++i)
     {
-      const Entry& e = myEntries[i];
-      out.putByte(e.address);
-      out.putByte(e.value);
+      const bool used = i < mySize;
+      out.putByte(used ? myEntries[i].address : 0);
+      out.putByte(used ? myEntries[i].value : 0);
     }
   }
   catch(...)
@@ -135,11 +139,15 @@ bool DelayQueueMember<capacity>::load(Serializer& in)
   {
     mySize = in.getByte();
     if (mySize > capacity) throw runtime_error("invalid delay queue size");
-    for(uInt32 i = 0; i < mySize; ++i)
+    for(uInt32 i = 0; i < capacity; ++i)
     {
-      Entry& e = myEntries[i];
-      e.address = in.getByte();
-      e.value = in.getByte();
+      const uInt8 address = in.getByte();
+      const uInt8 value = in.getByte();
+      if (i < mySize)
+      {
+        myEntries[i].address = address;
+        myEntries[i].value = value;
+      }
     }
   }
   catch(...)

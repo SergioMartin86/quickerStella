@@ -216,7 +216,7 @@ void Player::toggleCollisions(bool enabled)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Player::setColor(uInt8 color)
 {
-  if (color != myObjectColor && myPattern) myTIA->flushLineCache();
+  if (color != myObjectColor && myPattern) myTIA->flushLineCacheColor();
 
   myObjectColor = color;
   applyColors();

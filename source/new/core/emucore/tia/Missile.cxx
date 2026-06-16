@@ -164,7 +164,7 @@ void Missile::nextLine()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Missile::setColor(uInt8 color)
 {
-  if (color != myObjectColor && myIsEnabled)  myTIA->flushLineCache();
+  if (color != myObjectColor && myIsEnabled)  myTIA->flushLineCacheColor();
 
   myObjectColor = color;
   applyColors();

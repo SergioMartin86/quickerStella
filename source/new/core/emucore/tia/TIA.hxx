@@ -542,6 +542,15 @@ class TIA : public Device
     void flushLineCache();
 
     /**
+      Flush the line cache for a change that only affects pixel output, such as
+      a color register. Colors never affect collisions or RAM, so in
+      headless/botting mode (rendering disabled) this is a no-op; that lets
+      line-caching keep skipping redundant per-clock collision processing
+      across color-only changes.
+    */
+    void flushLineCacheColor();
+
+    /**
       Schedule a collision update
      */
     void scheduleCollisionUpdate();

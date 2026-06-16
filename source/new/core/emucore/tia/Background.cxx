@@ -28,7 +28,7 @@ void Background::reset()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Background::setColor(uInt8 color)
 {
-  if (color != myObjectColor) myTIA->flushLineCache();
+  if (color != myObjectColor) myTIA->flushLineCacheColor();
 
   myObjectColor = color;
   applyColors();

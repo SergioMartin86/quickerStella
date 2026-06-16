@@ -703,7 +703,7 @@ bool TIA::poke(uInt16 address, uInt8 value)
 
     case COLUPF:
     {
-      flushLineCache();
+      flushLineCacheColor();
       value &= 0xFE;
       if(myPFColorDelay)
         myDelayQueue.push(COLUPF, value, 1);
@@ -1668,6 +1668,14 @@ FORCE_INLINE void TIA::renderPixel(uInt32 x, uInt32 y)
   myBackBuffer[y * TIAConstants::H_PIXEL + x] = color;
   if (myIsLayoutDetector)
     myFrameManager->pixelColor(color);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void TIA::flushLineCacheColor()
+{
+  // Color changes only affect rendered pixels, never collisions or RAM, so
+  // skip the (collision-preserving) cache flush entirely when not rendering.
+  if (stella::_renderingEnabled) flushLineCache();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

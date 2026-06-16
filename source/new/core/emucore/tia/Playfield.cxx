@@ -131,7 +131,7 @@ void Playfield::toggleCollisions(bool enabled)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Playfield::setColor(uInt8 color)
 {
-  if (color != myObjectColor && myColorMode == ColorMode::normal) myTIA->flushLineCache();
+  if (color != myObjectColor && myColorMode == ColorMode::normal) myTIA->flushLineCacheColor();
 
   myObjectColor = color;
   applyColors();
@@ -140,7 +140,7 @@ void Playfield::setColor(uInt8 color)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Playfield::setColorP0(uInt8 color)
 {
-  if (color != myColorP0 && myColorMode == ColorMode::score) myTIA->flushLineCache();
+  if (color != myColorP0 && myColorMode == ColorMode::score) myTIA->flushLineCacheColor();
 
   myColorP0 = color;
   applyColors();
@@ -149,7 +149,7 @@ void Playfield::setColorP0(uInt8 color)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Playfield::setColorP1(uInt8 color)
 {
-  if (color != myColorP1 && myColorMode == ColorMode::score) myTIA->flushLineCache();
+  if (color != myColorP1 && myColorMode == ColorMode::score) myTIA->flushLineCacheColor();
 
   myColorP1 = color;
   applyColors();

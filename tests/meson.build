@@ -4,8 +4,9 @@ bash = find_program('bash')
 testTimeout = 240
 
 # Tests for copyrighted game roms (only for local testing or own CI runners)
-protectedTestSet = [ 
-  'frogger.anyPercent'
+protectedTestSet = [
+  'frogger.anyPercent',
+  'pitfall.playaround'
 ]
 
 # Tests for open source free roms (for public cloud testing)
